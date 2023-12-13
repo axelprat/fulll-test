@@ -9,7 +9,7 @@ function fizzBuzz ($max) {
     $value = 1;
     while ($value <= $max) {
         $display = $value;
-        if ($value % 3 === 0 && $value % 5 === 0) {
+        if ($value % 15 === 0) {
             $display = 'FizzBuzz';
         } elseif ($value % 3 === 0) {
             $display = 'Fizz';

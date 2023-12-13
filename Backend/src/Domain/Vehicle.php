@@ -7,6 +7,9 @@ namespace Fulll\Domain;
 class Vehicle
 {
 
+    /** @var ?int $id */
+    protected ?int $id;
+
     /** @var string $licencePlate */
     protected string $licencePlate;
 
@@ -16,7 +19,32 @@ class Vehicle
     /** @var ?Location $location */
     protected ?Location $location = null;
 
-    public function __construct($licencePlate)
+    public function __construct(string $licencePlate, ?int $id = null)
+    {
+        $this->id = $id;
+        $this->licencePlate = $licencePlate;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param string $licencePlate
+     */
+    public function setLicencePlate(string $licencePlate)
     {
         $this->licencePlate = $licencePlate;
     }

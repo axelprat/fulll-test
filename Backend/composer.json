@@ -2,7 +2,8 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "behat/behat": "*"
+        "behat/behat": "*",
+        "ext-pdo": "*"
     },
     "require-dev": {
     },

@@ -1,0 +1,89 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Fulll\Domain\Fleet;
+use Fulll\Domain\Location;
+use Fulll\Domain\Vehicle;
+use Fulll\Infra\FleetRepository;
+use Fulll\Infra\VehicleRepository;
+use Fulll\App\FleetManager;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+$application = new Application();
+
+$application->register('create')
+    ->addArgument('userId', InputArgument::REQUIRED)
+    ->setCode(function (InputInterface $input, OutputInterface $output): int
+    {
+        $fleetRepository = new FleetRepository();
+        $fleet = new Fleet($input->getArgument('userId'));
+        $fleetRepository->save($fleet);
+        $output->writeln($fleet->getId());
+
+        return Command::SUCCESS;
+    });
+
+$application->register('register-vehicle')
+    ->addArgument('fleetId', InputArgument::REQUIRED)
+    ->addArgument('vehiclePlateNumber', InputArgument::REQUIRED)
+    ->setCode(function (InputInterface $input, OutputInterface $output)
+    {
+        $fleetManager = new FleetManager();
+        $fleetRepository = new FleetRepository();
+        $fleet = $fleetRepository->getById($input->getArgument('fleetId'));
+
+        $vehicleRepository = new VehicleRepository();
+        $vehicle = $vehicleRepository->getByLicence($input->getArgument('vehiclePlateNumber'));
+
+        if (empty($vehicle)) {
+            $vehicle = new Vehicle($input->getArgument('vehiclePlateNumber'));
+            $vehicleRepository->save($vehicle);
+        }
+
+        $fleetManager->registerVehicleToFleet($fleet, $vehicle);
+
+        return Command::SUCCESS;
+    });
+
+$application->register('localize-vehicle')
+    ->addArgument('fleetId', InputArgument::REQUIRED)
+    ->addArgument('vehiclePlateNumber', InputArgument::REQUIRED)
+    ->addArgument('lat', InputArgument::REQUIRED)
+    ->addArgument('lng', InputArgument::REQUIRED)
+    ->addArgument('alt', InputArgument::OPTIONAL)
+    ->setCode(function (InputInterface $input, OutputInterface $output)
+    {
+        $fleetManager = new FleetManager();
+        $vehicleRepository = new VehicleRepository();
+        $vehicle = $vehicleRepository->getByLicence($input->getArgument('vehiclePlateNumber'));
+
+        if (empty($vehicle)) {
+            $vehicle = new Vehicle($input->getArgument('vehiclePlateNumber'));
+            $vehicleRepository->save($vehicle);
+        }
+
+        if ($vehicle->getFleet()->getId() != $input->getArgument('fleetId')) {
+            global $application;
+            $greetInput = new ArrayInput([
+                // the command name is passed as first argument
+                'command' => 'register-vehicle',
+                'fleetId' => $input->getArgument('fleetId'),
+                'vehiclePlateNumber' => $input->getArgument('vehiclePlateNumber'),
+            ]);
+            $application->doRun($greetInput, $output);
+        }
+
+        $location = new Location($input->getArgument('lat'), $input->getArgument('lng'), $input->getArgument('alt'));
+        $fleetManager->parkVehicleToLocation($vehicle, $location);
+
+        return Command::SUCCESS;
+    });
+
+$application->run();

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
+use RuntimeException;
 use Fulll\App\Calculator;
 use Fulll\App\FleetManager;
 use Fulll\Domain\Fleet;
@@ -26,7 +27,7 @@ class FeatureContext implements Context
     public function aShouldBeEqualTo(string $var, int $value): void
     {
         if ($value !== $this->$var) {
-            throw new \RuntimeException(sprintf('%s is expected to be equal to %s, got %s', $var, $value, $this->$var));
+            throw new RuntimeException(sprintf('%s is expected to be equal to %s, got %s', $var, $value, $this->$var));
         }
     }
 
@@ -80,7 +81,7 @@ class FeatureContext implements Context
      */
     public function aLocation()
     {
-        $this->location = new Location('1');
+        $this->location = new Location(43.4256532,5.2871208);
     }
 
     /**
@@ -124,8 +125,13 @@ class FeatureContext implements Context
      */
     public function vehicleIsInMyFleet(): void
     {
-        if ($this->vehicle->getFleet() !== $this->myFleet) {
-            throw new \RuntimeException(sprintf('Vehicle %s should be in fleet %s, got %s', $this->vehicle->getLicencePlate(), $this->myFleet->getUser(), $this->vehicle->getFleet()->getUser()));
+        if ($this->vehicle->getFleet()->getUser() !== $this->myFleet->getUser()) {
+            throw new RuntimeException(sprintf(
+                'Vehicle %s should be in fleet %s, got %s',
+                $this->vehicle->getLicencePlate(),
+                $this->myFleet->getUser(),
+                $this->vehicle->getFleet()->getUser()
+            ));
         }
     }
 
@@ -134,8 +140,12 @@ class FeatureContext implements Context
      */
     public function vehicleAlreadyInMyFleet(): void
     {
-        if (!isset($this->catchedException) || !($this->catchedException instanceof Exception) || $this->catchedException->getMessage() !== 'Vehicle already in this fleet !') {
-            throw new \RuntimeException('Vehicle did not express its membership in my fleet');
+        if (
+            !isset($this->catchedException)
+            || !($this->catchedException instanceof Exception)
+            || $this->catchedException->getMessage() !== 'Vehicle already in this fleet !'
+        ) {
+            throw new RuntimeException('Vehicle did not express its membership in my fleet');
         }
     }
 
@@ -144,8 +154,18 @@ class FeatureContext implements Context
      */
     public function vehicleIsInLocation(): void
     {
-        if ($this->vehicle->getLocation() !== $this->location) {
-            throw new \RuntimeException(sprintf('Vehicle %s should be in location %s, got %s', $this->vehicle->getLicencePlate(), $this->location->getPlace(), $this->vehicle->getLocation()->getPlace()));
+        if (
+            !$this->vehicle->getLocation()
+            || $this->vehicle->getLocation()->getLat() !== $this->location->getLat()
+            || $this->vehicle->getLocation()->getLong() !== $this->location->getLong()
+            || $this->vehicle->getLocation()->getAlt() !== $this->location->getAlt()
+        ) {
+            throw new RuntimeException(sprintf(
+                'Vehicle %s should be in location %s, got %s',
+                $this->vehicle->getLicencePlate(),
+                $this->location->getPlace(),
+                $this->vehicle->getLocation()->getPlace()
+            ));
         }
     }
 
@@ -154,8 +174,12 @@ class FeatureContext implements Context
      */
     public function vehicleAlreadyInLocation(): void
     {
-        if (!isset($this->catchedException) || !($this->catchedException instanceof Exception) || $this->catchedException->getMessage() !== 'Vehicle already in this location !') {
-            throw new \RuntimeException('Vehicle did not express its presence at this location');
+        if (
+            !isset($this->catchedException)
+            || !($this->catchedException instanceof Exception)
+            || $this->catchedException->getMessage() !== 'Vehicle already in this location !'
+        ) {
+            throw new RuntimeException('Vehicle did not express its presence at this location');
         }
     }
 

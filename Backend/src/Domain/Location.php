@@ -7,20 +7,55 @@ namespace Fulll\Domain;
 class Location
 {
 
-    /** @var string $place */
-    protected string $place;
+    /** @var float $lat */
+    protected float $lat;
 
-    public function __construct($place)
+    /** @var float $long */
+    protected float $long;
+
+    /** @var ?float $alt */
+    protected ?float $alt;
+
+    public function __construct(float $lat, float $long, ?float $alt = null)
     {
-        $this->place = $place;
+        $this->lat = $lat;
+        $this->long = $long;
+        $this->alt = $alt;
     }
 
-    /**
-     * @return string
-     */
+    public function getLat(): float
+    {
+        return $this->lat;
+    }
+
+    public function setLat(float $lat)
+    {
+        $this->lat = $lat;
+    }
+
+    public function getLong(): float
+    {
+        return $this->long;
+    }
+
+    public function setLong(float $long)
+    {
+        $this->long = $long;
+    }
+
+    public function getAlt(): ?float
+    {
+        return $this->alt;
+    }
+
+    public function setAlt(?float $alt)
+    {
+        $this->alt = $alt;
+    }
+
     public function getPlace(): string
     {
-        return $this->place;
+        return $this->lat . ',' . $this->long . (!is_null($this->alt) ? ':' . $this->alt : '');
     }
 
 }
